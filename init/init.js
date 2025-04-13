@@ -1,118 +1,36 @@
-const products = [
-  {
-    title: "Melena de León",
-    description: "Cuerpo fructífero de hongos y micelio de Hericium erinaceus.",
-    ingredient: "Hericium erinaceus",
-    type: "capsules",
-    displayingType: "Capsules",
-    price: 80000,
-    totalStock: 50,
-    availableStock: 50,
-    slug: "melena-de-leon-capsules"
-  },
-  {
-    title: "Melena de León",
-    description: "Cuerpo fructífero de hongos y micelio de Hericium erinaceus.",
-    ingredient: "Hericium erinaceus",
-    type: "extracts",
-    displayingType: "Extracto",
-    size: "100ml",
-    price: 90000,
-    totalStock: 30,
-    availableStock: 30,
-    slug: "melena-de-leon-extract-100ml"
-  },
-  {
-    title: "Melena de León",
-    description: "Lorem ipsum",
-    ingredient: "Hericium erinaceus",
-    type: "extracts",
-    displayingType: "Extracto",
-    size: "30ml",
-    price: 35000,
-    totalStock: 40,
-    availableStock: 40,
-    slug: "melena-de-leon-extract-30ml"
-  },
-  {
-    title: "Reishi",
-    description: "Cuerpo fructífero de hongos y micelio de Ganoderma lucidum.",
-    ingredient: "Ganoderma lucidum",
-    type: "extracts",
-    displayingType: "Extracto",
-    size: "100ml",
-    price: 90000,
-    totalStock: 50,
-    availableStock: 50,
-    slug: "reishi-extract-100ml"
-  },
-  {
-    title: "Reishi",
-    description: "Cuerpo fructífero de hongos y micelio de Ganoderma lucidum.",
-    ingredient: "Ganoderma lucidum",
-    type: "extracts",
-    displayingType: "Extracto",
-    size: "30ml",
-    price: 35000,
-    totalStock: 50,
-    availableStock: 50,
-    slug: "reishi-extract-30ml"
-  },
-  {
-    title: "Cola de Pavo",
-    description: "Cuerpo fructífero de hongos y micelio de Trametes Versicolor.",
-    ingredient: "Trametes Versicolor",
-    type: "extracts",
-    displayingType: "Extracto",
-    size: "100ml",
-    price: 90000,
-    totalStock: 50,
-    availableStock: 50,
-    slug: "cola-de-pavo-extract-100ml"
-  },
-  {
-    title: "Cola de Pavo",
-    description: "Cuerpo fructífero de hongos y micelio de Trametes Versicolor.",
-    ingredient: "Trametes Versicolor",
-    type: "extracts",
-    displayingType: "Extracto",
-    size: "30ml",
-    price: 35000,
-    totalStock: 50,
-    availableStock: 50,
-    slug: "cola-de-pavo-extract-30ml"
-  },
-  {
-    title: "Complex",
-    description: "Complex lorem.",
-    ingredient: "Complex ipsum",
-    type: "extracts",
-    displayingType: "extracto",
-    size: "100ml",
-    price: 216000,
-    totalStock: 20,
-    availableStock: 20,
-    slug: "complexo-100ml"
-  },
-  {
-    title: "Complex",
-    description: "Complex lorem.",
-    ingredient: "Complex ipsum",
-    type: "extracts",
-    displayingType: "extracto",
-    size: "30ml",
-    price: 85000,
-    totalStock: 50,
-    availableStock: 50,
-    slug: "complexo-30ml"
+import { MongoClient } from 'mongodb';
+import fs from 'fs/promises';
+
+const uri = 'mongodb://localhost:27017';
+const dbName = 'app';
+
+const client = new MongoClient(uri, {
+  useUnifiedTopology: true,
+});
+
+async function main() {
+  try {
+    console.log("🟡 Connecting to Mongo...");
+    await client.connect();
+    const db = client.db(dbName);
+    const collection = db.collection('products');
+
+    const data = JSON.parse(await fs.readFile('./products.json', 'utf-8'));
+
+    // Only insert if collection is empty
+    const count = await collection.countDocuments();
+    if (count === 0) {
+      console.log("📦 Inserting initial data...");
+      await collection.insertMany(data);
+    } else {
+      console.log("✅ Collection already has data");
+    }
+  } catch (e) {
+    console.error("🔥 Error:", e);
+  } finally {
+    await client.close();
+    console.log("🔌 Disconnected from Mongo");
   }
-];
-
-db = db.getSiblingDB("app");
-
-if (db.products.countDocuments() === 0) {
-  db.products.insertMany(products);
-  print("Inserted initial products into 'products' collection.");
-} else {
-  print("'products' collection already contains data. Skipping insert.");
 }
+
+main();

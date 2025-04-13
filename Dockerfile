@@ -1,8 +1,10 @@
-# Use official MongoDB image
-FROM mongo:7.0
+FROM node:18
 
-# Optional: copy initialization scripts
-COPY ./init /docker-entrypoint-initdb.d/
+WORKDIR /app
 
-# Default MongoDB port
-EXPOSE 27017
+COPY package.json .
+RUN npm install
+
+COPY . .
+
+CMD ["node", "init.js"]
