@@ -1,5 +1,5 @@
 services:
-  - type: private
+  - type: pserv
     name: mongodb
     env: docker
     plan: starter
