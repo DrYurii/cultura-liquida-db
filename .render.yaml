@@ -13,3 +13,4 @@ services:
       - key: MONGO_INITDB_ROOT_PASSWORD
       - key: MONGO_INITDB_DATABASE
     autoDeploy: true
+    healthCheckPath: ""
