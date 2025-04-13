@@ -1,35 +1,37 @@
 import { MongoClient } from 'mongodb';
 import fs from 'fs/promises';
 
-const uri = 'mongodb://localhost:27017';
-const dbName = 'app';
+const username = process.env.MONGO_INITDB_ROOT_USERNAME;
+const password = process.env.MONGO_INITDB_ROOT_PASSWORD;
+const dbName = process.env.MONGO_INITDB_DATABASE;
+const host = process.env.MONGO_HOST || 'localhost'; // or injected by Render
 
-const client = new MongoClient(uri, {
-  useUnifiedTopology: true,
-});
+const uri = `mongodb://${username}:${password}@${host}:27017/${dbName}?authSource=admin`;
+
+const client = new MongoClient(uri);
 
 async function main() {
   try {
-    console.log("🟡 Connecting to Mongo...");
+    console.log("🔌 Connecting to Mongo...");
     await client.connect();
+
     const db = client.db(dbName);
     const collection = db.collection('products');
 
-    const data = JSON.parse(await fs.readFile('./products.json', 'utf-8'));
+    const data = JSON.parse(await fs.readFile('products.json', 'utf-8'));
 
-    // Only insert if collection is empty
     const count = await collection.countDocuments();
     if (count === 0) {
-      console.log("📦 Inserting initial data...");
+      console.log("📦 Inserting products...");
       await collection.insertMany(data);
     } else {
-      console.log("✅ Collection already has data");
+      console.log("✅ Products already exist. Skipping insert.");
     }
-  } catch (e) {
-    console.error("🔥 Error:", e);
+  } catch (err) {
+    console.error("💥 Failed:", err);
   } finally {
     await client.close();
-    console.log("🔌 Disconnected from Mongo");
+    console.log("🔒 Disconnected.");
   }
 }
 
